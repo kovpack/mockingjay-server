@@ -18,30 +18,39 @@ Elm.App.make = function (_elm) {
    $Task = Elm.Task.make(_elm);
    var _op = {};
    var renderEndpoint = function (endpoint) {
-      return A2($Html.li,_U.list([]),_U.list([A2($Html.div,_U.list([]),_U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text(endpoint.name)]))]))]));
+      return A2($Html.li,
+      _U.list([]),
+      _U.list([A2($Html.div,
+      _U.list([]),
+      _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text(endpoint.name)]))
+              ,A2($Html.code,_U.list([]),_U.list([$Html.text("CDC Disabled: "),$Html.text($Basics.toString(endpoint.cdcDisabled))]))
+              ,A2($Html.p,_U.list([]),_U.list([$Html.text(endpoint.request.uri)]))]))]));
    };
    var renderEndpoints = function (endpoints) {    return A2($Html.ul,_U.list([]),A2($List.map,renderEndpoint,endpoints));};
    var view = F2(function (address,model) {
       return A2($Html.div,_U.list([]),_U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Mockingjay")])),renderEndpoints(model)]));
    });
+   var GetEndpoints = function (a) {    return {ctor: "GetEndpoints",_0: a};};
+   var testModel = _U.list([]);
+   var update = F2(function (action,model) {    var _p0 = action;return {ctor: "_Tuple2",_0: A2($Maybe.withDefault,testModel,_p0._0),_1: $Effects.none};});
+   var Endpoint = F3(function (a,b,c) {    return {name: a,cdcDisabled: b,request: c};});
+   var Request = function (a) {    return {uri: a};};
    var decodeEndpoint = function () {
-      var endpoint = A2($Json$Decode.object1,function (title) {    return {name: title};},A2($Json$Decode._op[":="],"Name",$Json$Decode.string));
+      var endpoint = A4($Json$Decode.object3,
+      Endpoint,
+      A2($Json$Decode._op[":="],"Name",$Json$Decode.string),
+      A2($Json$Decode._op[":="],"CDCDisabled",$Json$Decode.bool),
+      A2($Json$Decode.object1,Request,A2($Json$Decode.at,_U.list(["Request","URI"]),$Json$Decode.string)));
+      var request = $Json$Decode.object1(Request);
       return $Json$Decode.list(endpoint);
    }();
-   var GetEndpoints = function (a) {    return {ctor: "GetEndpoints",_0: a};};
    var getEndpoints = $Effects.task(A2($Task.map,GetEndpoints,$Task.toMaybe(A2($Http.get,decodeEndpoint,"http://localhost:9090/mj-endpoints"))));
-   var testModel = _U.list([{name: "Test endpoint"},{name: "Another endpoint"}]);
    var init = {ctor: "_Tuple2",_0: testModel,_1: getEndpoints};
-   var update = F2(function (action,model) {
-      var _p0 = action;
-      var foo = 1 + A2($Debug.log,"number",1);
-      return {ctor: "_Tuple2",_0: A2($Maybe.withDefault,testModel,_p0._0),_1: $Effects.none};
-   });
    var app = $StartApp.start({init: init,update: update,view: view,inputs: _U.list([])});
    var main = app.html;
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
-   var Endpoint = function (a) {    return {name: a};};
    return _elm.App.values = {_op: _op
+                            ,Request: Request
                             ,Endpoint: Endpoint
                             ,testModel: testModel
                             ,init: init

@@ -6,23 +6,25 @@ import String exposing (..)
 import StartApp
 import List
 import Http
-import Json.Decode as Json exposing((:=))
+import Json.Decode as Decode exposing (Decoder, (:=))
 import Task
 import Effects exposing (Effects, Never)
 import Debug
 
 -- model
+type alias Request = {
+  uri: String
+}
+
 type alias Endpoint = {
-  name: String
+  name: String,
+  cdcDisabled: Bool,
+  request: Request
 }
 
 type alias Model = List Endpoint
 
-testModel = [
-      { name = "Test endpoint"},
-      { name = "Another endpoint"}
-  ]
-
+testModel = []
 init : (Model, Effects Action)
 init = (testModel, getEndpoints)
 
@@ -35,13 +37,21 @@ getEndpoints =
     |> Task.map GetEndpoints
     |> Effects.task
 
-decodeEndpoint : Json.Decoder (List Endpoint)
+decodeEndpoint : Decode.Decoder (List Endpoint)
 decodeEndpoint =
-  let endpoint =
-        Json.object1 (\title-> {name = title})
-          ("Name" := Json.string)
+  let
+    request = Decode.object1 Request
+
+    endpoint =
+        Decode.object3 Endpoint
+        ("Name" := Decode.string)
+        ("CDCDisabled" := Decode.bool)
+        (
+          Decode.object1 Request
+          (Decode.at ["Request", "URI"] Decode.string)
+        )
   in
-      Json.list endpoint
+      Decode.list endpoint
 
 -- update
 
@@ -49,9 +59,6 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
     GetEndpoints endpoints ->
-      let
-        foo = 1 + Debug.log "number" 1
-        in
       (
         Maybe.withDefault testModel endpoints,
         Effects.none
@@ -60,7 +67,9 @@ update action model =
 
 renderEndpoint : Endpoint -> Html
 renderEndpoint endpoint = li [] [ div [] [
-      h2 [] [(text endpoint.name)]
+      h2 [] [(text endpoint.name)],
+      code [] [(text "CDC Disabled: "), endpoint.cdcDisabled |> toString |> text],
+      p [] [(text endpoint.request.uri)]
     ]
   ]
 
