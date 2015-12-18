@@ -53,6 +53,7 @@ func (s *Server) listAvailableRequests(w http.ResponseWriter) {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
+		s.setAccessControlHeaders(w)
 		w.WriteHeader(http.StatusOK)
 		w.Write(payload)
 	}
@@ -85,7 +86,7 @@ func (s *Server) serveEndpoints(w http.ResponseWriter) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
+	s.setAccessControlHeaders(w)
 	w.Write(endpointsBody)
 	w.Header().Set("Content-Type", "application/json")
 }
@@ -110,4 +111,8 @@ func (s *Server) createEndpoint(w http.ResponseWriter, r *http.Request) {
 	s.endpoints = append(s.endpoints, newEndpoint)
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (s *Server) setAccessControlHeaders(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 }
