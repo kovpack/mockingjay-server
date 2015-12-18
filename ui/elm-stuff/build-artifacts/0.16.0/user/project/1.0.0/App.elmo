@@ -1,0 +1,41 @@
+Elm.App = Elm.App || {};
+Elm.App.make = function (_elm) {
+   "use strict";
+   _elm.App = _elm.App || {};
+   if (_elm.App.values) return _elm.App.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $StartApp$Simple = Elm.StartApp.Simple.make(_elm);
+   var _op = {};
+   var renderEndpoint = function (endpoint) {
+      return A2($Html.li,
+      _U.list([]),
+      _U.list([A2($Html.div,
+      _U.list([]),
+      _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text(endpoint.name)])),A2($Html.code,_U.list([]),_U.list([$Html.text(endpoint.uri)]))]))]));
+   };
+   var renderEndpoints = function (endpoints) {    return A2($Html.ul,_U.list([]),A2($List.map,renderEndpoint,endpoints));};
+   var view = F2(function (address,model) {
+      return A2($Html.div,_U.list([]),_U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Mockingjay")])),renderEndpoints(model)]));
+   });
+   var update = F2(function (action,model) {    return model;});
+   var Toggle = {ctor: "Toggle"};
+   var initialModel = _U.list([{name: "Test endpoint",uri: "/hello"},{name: "Another endpoint",uri: "/hello/pants"}]);
+   var main = $StartApp$Simple.start({model: initialModel,update: update,view: view});
+   var Endpoint = F2(function (a,b) {    return {name: a,uri: b};});
+   return _elm.App.values = {_op: _op
+                            ,Endpoint: Endpoint
+                            ,initialModel: initialModel
+                            ,Toggle: Toggle
+                            ,update: update
+                            ,renderEndpoint: renderEndpoint
+                            ,renderEndpoints: renderEndpoints
+                            ,view: view
+                            ,main: main};
+};
