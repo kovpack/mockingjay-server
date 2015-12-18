@@ -9,6 +9,7 @@ Elm.App.make = function (_elm) {
    $Dict = Elm.Dict.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
@@ -25,6 +26,22 @@ Elm.App.make = function (_elm) {
       };
       return A2($Html.ul,_U.list([]),A2($List.map,itemRenderer,$Dict.toList(headers)));
    };
+   var renderResponse = function (response) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("response")]),
+      _U.list([A2($Html.h3,_U.list([]),_U.list([$Html.text("Response")]))
+              ,A2($Html.p,_U.list([]),_U.list([$Html.text($Basics.toString(response.status))]))
+              ,A2($Maybe.withDefault,$Html.text("lol"),A2($Maybe.map,renderHeaders,response.headers))
+              ,A2($Html.blockquote,_U.list([]),_U.list([$Html.text(response.body)]))]));
+   };
+   var renderRequest = function (request) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("request")]),
+      _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Request")]))
+              ,A2($Html.p,_U.list([]),_U.list([$Html.text(request.method),$Html.text(" "),$Html.text(request.uri)]))
+              ,A2($Maybe.withDefault,$Html.text("lol"),A2($Maybe.map,renderHeaders,request.headers))
+              ,A2($Html.blockquote,_U.list([]),_U.list([$Html.text(request.body)]))]));
+   };
    var renderEndpoint = function (endpoint) {
       return A2($Html.li,
       _U.list([]),
@@ -32,14 +49,8 @@ Elm.App.make = function (_elm) {
       _U.list([]),
       _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text(endpoint.name)]))
               ,A2($Html.code,_U.list([]),_U.list([$Html.text("CDC Disabled: "),$Html.text($Basics.toString(endpoint.cdcDisabled))]))
-              ,A2($Html.h3,_U.list([]),_U.list([$Html.text("Request")]))
-              ,A2($Html.p,_U.list([]),_U.list([$Html.text(endpoint.request.method),$Html.text(" "),$Html.text(endpoint.request.uri)]))
-              ,A2($Maybe.withDefault,$Html.text("lol"),A2($Maybe.map,renderHeaders,endpoint.request.headers))
-              ,A2($Html.blockquote,_U.list([]),_U.list([$Html.text(endpoint.request.body)]))
-              ,A2($Html.h3,_U.list([]),_U.list([$Html.text("Response")]))
-              ,A2($Html.p,_U.list([]),_U.list([$Html.text($Basics.toString(endpoint.response.status))]))
-              ,A2($Maybe.withDefault,$Html.text("lol"),A2($Maybe.map,renderHeaders,endpoint.response.headers))
-              ,A2($Html.blockquote,_U.list([]),_U.list([$Html.text(endpoint.response.body)]))]))]));
+              ,renderRequest(endpoint.request)
+              ,renderResponse(endpoint.response)]))]));
    };
    var renderEndpoints = function (endpoints) {    return A2($Html.ul,_U.list([]),A2($List.map,renderEndpoint,endpoints));};
    var view = F2(function (address,model) {
@@ -85,6 +96,8 @@ Elm.App.make = function (_elm) {
                             ,getEndpoints: getEndpoints
                             ,decodeEndpoint: decodeEndpoint
                             ,update: update
+                            ,renderRequest: renderRequest
+                            ,renderResponse: renderResponse
                             ,renderEndpoint: renderEndpoint
                             ,renderEndpoints: renderEndpoints
                             ,renderHeaders: renderHeaders

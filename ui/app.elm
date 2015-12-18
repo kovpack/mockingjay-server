@@ -1,7 +1,7 @@
 module App where
 
 import Html exposing (..)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (..)
 import String exposing (..)
 import StartApp
 import List
@@ -84,19 +84,30 @@ update action model =
         Effects.none
       )
 
+-- view
+
+renderRequest : Request -> Html
+renderRequest request = div [class "request"] [
+    h2 [] [(text "Request")],
+    p [] [(text request.method), (text " "), (text request.uri)],
+    Maybe.withDefault (text "lol") (Maybe.map renderHeaders request.headers),
+    blockquote [] [(text request.body)]
+  ]
+
+renderResponse : Response -> Html
+renderResponse response = div [class "response"] [
+    h3 [] [(text "Response")],
+    p [] [(response.status |> toString |> text)],
+    Maybe.withDefault (text "lol") (Maybe.map renderHeaders response.headers),
+    blockquote [] [(text response.body)]
+  ]
 
 renderEndpoint : Endpoint -> Html
 renderEndpoint endpoint = li [] [ div [] [
       h2 [] [(text endpoint.name)],
       code [] [(text "CDC Disabled: "), endpoint.cdcDisabled |> toString |> text],
-      h3 [] [(text "Request")],
-      p [] [(text endpoint.request.method), (text " "), (text endpoint.request.uri)],
-      Maybe.withDefault (text "lol") (Maybe.map renderHeaders endpoint.request.headers), -- must be a better way!
-      blockquote [] [(text endpoint.request.body)],
-      h3 [] [(text "Response")],
-      p [] [(endpoint.response.status |> toString |> text)],
-      Maybe.withDefault (text "lol") (Maybe.map renderHeaders endpoint.response.headers), -- must be a better way!
-      blockquote [] [(text endpoint.response.body)]
+      (renderRequest endpoint.request),
+      (renderResponse endpoint.response)
     ]
   ]
 
@@ -111,8 +122,6 @@ renderHeaders headers =
   in
     ul [] (List.map itemRenderer (Dict.toList headers))
 
-
--- view
 
 view : Signal.Address Action -> Model -> Html
 view address model = div [] [
