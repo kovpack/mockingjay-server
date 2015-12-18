@@ -6,6 +6,7 @@ Elm.App.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Http = Elm.Http.make(_elm),
@@ -17,6 +18,13 @@ Elm.App.make = function (_elm) {
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
+   var renderHeaders = function (headers) {
+      var itemRenderer = function (_p0) {
+         var _p1 = _p0;
+         return A2($Html.li,_U.list([]),_U.list([$Html.text(_p1._0),$Html.text(" -> "),$Html.text(_p1._1)]));
+      };
+      return A2($Html.ul,_U.list([]),A2($List.map,itemRenderer,$Dict.toList(headers)));
+   };
    var renderEndpoint = function (endpoint) {
       return A2($Html.li,
       _U.list([]),
@@ -24,7 +32,14 @@ Elm.App.make = function (_elm) {
       _U.list([]),
       _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text(endpoint.name)]))
               ,A2($Html.code,_U.list([]),_U.list([$Html.text("CDC Disabled: "),$Html.text($Basics.toString(endpoint.cdcDisabled))]))
-              ,A2($Html.p,_U.list([]),_U.list([$Html.text(endpoint.request.uri)]))]))]));
+              ,A2($Html.h3,_U.list([]),_U.list([$Html.text("Request")]))
+              ,A2($Html.p,_U.list([]),_U.list([$Html.text(endpoint.request.method),$Html.text(" "),$Html.text(endpoint.request.uri)]))
+              ,A2($Maybe.withDefault,$Html.text("lol"),A2($Maybe.map,renderHeaders,endpoint.request.headers))
+              ,A2($Html.blockquote,_U.list([]),_U.list([$Html.text(endpoint.request.body)]))
+              ,A2($Html.h3,_U.list([]),_U.list([$Html.text("Response")]))
+              ,A2($Html.p,_U.list([]),_U.list([$Html.text($Basics.toString(endpoint.response.status))]))
+              ,A2($Maybe.withDefault,$Html.text("lol"),A2($Maybe.map,renderHeaders,endpoint.response.headers))
+              ,A2($Html.blockquote,_U.list([]),_U.list([$Html.text(endpoint.response.body)]))]))]));
    };
    var renderEndpoints = function (endpoints) {    return A2($Html.ul,_U.list([]),A2($List.map,renderEndpoint,endpoints));};
    var view = F2(function (address,model) {
@@ -32,15 +47,26 @@ Elm.App.make = function (_elm) {
    });
    var GetEndpoints = function (a) {    return {ctor: "GetEndpoints",_0: a};};
    var testModel = _U.list([]);
-   var update = F2(function (action,model) {    var _p0 = action;return {ctor: "_Tuple2",_0: A2($Maybe.withDefault,testModel,_p0._0),_1: $Effects.none};});
-   var Endpoint = F3(function (a,b,c) {    return {name: a,cdcDisabled: b,request: c};});
-   var Request = function (a) {    return {uri: a};};
+   var update = F2(function (action,model) {    var _p2 = action;return {ctor: "_Tuple2",_0: A2($Maybe.withDefault,testModel,_p2._0),_1: $Effects.none};});
+   var Endpoint = F4(function (a,b,c,d) {    return {name: a,cdcDisabled: b,request: c,response: d};});
+   var Response = F3(function (a,b,c) {    return {status: a,headers: b,body: c};});
+   var Request = F4(function (a,b,c,d) {    return {uri: a,method: b,headers: c,body: d};});
    var decodeEndpoint = function () {
-      var endpoint = A4($Json$Decode.object3,
+      var endpoint = A5($Json$Decode.object4,
       Endpoint,
       A2($Json$Decode._op[":="],"Name",$Json$Decode.string),
       A2($Json$Decode._op[":="],"CDCDisabled",$Json$Decode.bool),
-      A2($Json$Decode.object1,Request,A2($Json$Decode.at,_U.list(["Request","URI"]),$Json$Decode.string)));
+      A5($Json$Decode.object4,
+      Request,
+      A2($Json$Decode.at,_U.list(["Request","URI"]),$Json$Decode.string),
+      A2($Json$Decode.at,_U.list(["Request","Method"]),$Json$Decode.string),
+      $Json$Decode.maybe(A2($Json$Decode.at,_U.list(["Request","Headers"]),$Json$Decode.dict($Json$Decode.string))),
+      A2($Json$Decode.at,_U.list(["Request","Body"]),$Json$Decode.string)),
+      A4($Json$Decode.object3,
+      Response,
+      A2($Json$Decode.at,_U.list(["Response","Code"]),$Json$Decode.$int),
+      $Json$Decode.maybe(A2($Json$Decode.at,_U.list(["Response","Headers"]),$Json$Decode.dict($Json$Decode.string))),
+      A2($Json$Decode.at,_U.list(["Response","Body"]),$Json$Decode.string)));
       var request = $Json$Decode.object1(Request);
       return $Json$Decode.list(endpoint);
    }();
@@ -51,6 +77,7 @@ Elm.App.make = function (_elm) {
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
    return _elm.App.values = {_op: _op
                             ,Request: Request
+                            ,Response: Response
                             ,Endpoint: Endpoint
                             ,testModel: testModel
                             ,init: init
@@ -60,6 +87,7 @@ Elm.App.make = function (_elm) {
                             ,update: update
                             ,renderEndpoint: renderEndpoint
                             ,renderEndpoints: renderEndpoints
+                            ,renderHeaders: renderHeaders
                             ,view: view
                             ,app: app
                             ,main: main};
