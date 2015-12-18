@@ -10573,6 +10573,72 @@ Elm.Html.Attributes.make = function (_elm) {
                                         ,property: property
                                         ,attribute: attribute};
 };
+Elm.Html = Elm.Html || {};
+Elm.Html.Events = Elm.Html.Events || {};
+Elm.Html.Events.make = function (_elm) {
+   "use strict";
+   _elm.Html = _elm.Html || {};
+   _elm.Html.Events = _elm.Html.Events || {};
+   if (_elm.Html.Events.values) return _elm.Html.Events.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $VirtualDom = Elm.VirtualDom.make(_elm);
+   var _op = {};
+   var keyCode = A2($Json$Decode._op[":="],"keyCode",$Json$Decode.$int);
+   var targetChecked = A2($Json$Decode.at,_U.list(["target","checked"]),$Json$Decode.bool);
+   var targetValue = A2($Json$Decode.at,_U.list(["target","value"]),$Json$Decode.string);
+   var defaultOptions = $VirtualDom.defaultOptions;
+   var Options = F2(function (a,b) {    return {stopPropagation: a,preventDefault: b};});
+   var onWithOptions = $VirtualDom.onWithOptions;
+   var on = $VirtualDom.on;
+   var messageOn = F3(function (name,addr,msg) {    return A3(on,name,$Json$Decode.value,function (_p0) {    return A2($Signal.message,addr,msg);});});
+   var onClick = messageOn("click");
+   var onDoubleClick = messageOn("dblclick");
+   var onMouseMove = messageOn("mousemove");
+   var onMouseDown = messageOn("mousedown");
+   var onMouseUp = messageOn("mouseup");
+   var onMouseEnter = messageOn("mouseenter");
+   var onMouseLeave = messageOn("mouseleave");
+   var onMouseOver = messageOn("mouseover");
+   var onMouseOut = messageOn("mouseout");
+   var onBlur = messageOn("blur");
+   var onFocus = messageOn("focus");
+   var onSubmit = messageOn("submit");
+   var onKey = F3(function (name,addr,handler) {    return A3(on,name,keyCode,function (code) {    return A2($Signal.message,addr,handler(code));});});
+   var onKeyUp = onKey("keyup");
+   var onKeyDown = onKey("keydown");
+   var onKeyPress = onKey("keypress");
+   return _elm.Html.Events.values = {_op: _op
+                                    ,onBlur: onBlur
+                                    ,onFocus: onFocus
+                                    ,onSubmit: onSubmit
+                                    ,onKeyUp: onKeyUp
+                                    ,onKeyDown: onKeyDown
+                                    ,onKeyPress: onKeyPress
+                                    ,onClick: onClick
+                                    ,onDoubleClick: onDoubleClick
+                                    ,onMouseMove: onMouseMove
+                                    ,onMouseDown: onMouseDown
+                                    ,onMouseUp: onMouseUp
+                                    ,onMouseEnter: onMouseEnter
+                                    ,onMouseLeave: onMouseLeave
+                                    ,onMouseOver: onMouseOver
+                                    ,onMouseOut: onMouseOut
+                                    ,on: on
+                                    ,onWithOptions: onWithOptions
+                                    ,defaultOptions: defaultOptions
+                                    ,targetValue: targetValue
+                                    ,targetChecked: targetChecked
+                                    ,keyCode: keyCode
+                                    ,Options: Options};
+};
 Elm.Native.Http = {};
 Elm.Native.Http.make = function(localRuntime) {
 
@@ -10928,6 +10994,7 @@ Elm.App.make = function (_elm) {
    $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
@@ -10971,12 +11038,33 @@ Elm.App.make = function (_elm) {
               ,renderResponse(endpoint.response)]))]));
    };
    var renderEndpoints = function (endpoints) {    return A2($Html.ul,_U.list([]),A2($List.map,renderEndpoint,endpoints));};
+   var update = F2(function (action,model) {
+      var _p2 = action;
+      if (_p2.ctor === "GetEndpoints") {
+            return {ctor: "_Tuple2"
+                   ,_0: A2($Maybe.withDefault,model,A2($Maybe.map,function (endpoint) {    return _U.update(model,{endpoints: endpoint});},_p2._0))
+                   ,_1: $Effects.none};
+         } else {
+            return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         }
+   });
+   var CreateEndpoint = {ctor: "CreateEndpoint"};
+   var renderAddForm = function (address) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("add-form")]),
+      _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Create new endpoint")]))
+              ,A2($Html.label,_U.list([$Html$Attributes.$for("name")]),_U.list([$Html.text("Name")]))
+              ,A2($Html.input,_U.list([$Html$Attributes.type$("text"),$Html$Attributes.name("name")]),_U.list([]))
+              ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,CreateEndpoint)]),_U.list([$Html.text("Create endpoint")]))]));
+   };
    var view = F2(function (address,model) {
-      return A2($Html.div,_U.list([]),_U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Mockingjay")])),renderEndpoints(model)]));
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("mockingjay-wrap")]),
+      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Mockingjay")])),renderAddForm(address),renderEndpoints(model.endpoints)]));
    });
    var GetEndpoints = function (a) {    return {ctor: "GetEndpoints",_0: a};};
-   var testModel = _U.list([]);
-   var update = F2(function (action,model) {    var _p2 = action;return {ctor: "_Tuple2",_0: A2($Maybe.withDefault,testModel,_p2._0),_1: $Effects.none};});
+   var testModel = {endpoints: _U.list([]),inputName: ""};
+   var Model = F2(function (a,b) {    return {endpoints: a,inputName: b};});
    var Endpoint = F4(function (a,b,c,d) {    return {name: a,cdcDisabled: b,request: c,response: d};});
    var Response = F3(function (a,b,c) {    return {status: a,headers: b,body: c};});
    var Request = F4(function (a,b,c,d) {    return {uri: a,method: b,headers: c,body: d};});
@@ -11008,9 +11096,11 @@ Elm.App.make = function (_elm) {
                             ,Request: Request
                             ,Response: Response
                             ,Endpoint: Endpoint
+                            ,Model: Model
                             ,testModel: testModel
                             ,init: init
                             ,GetEndpoints: GetEndpoints
+                            ,CreateEndpoint: CreateEndpoint
                             ,getEndpoints: getEndpoints
                             ,decodeEndpoint: decodeEndpoint
                             ,update: update
@@ -11019,6 +11109,7 @@ Elm.App.make = function (_elm) {
                             ,renderEndpoint: renderEndpoint
                             ,renderEndpoints: renderEndpoints
                             ,renderHeaders: renderHeaders
+                            ,renderAddForm: renderAddForm
                             ,view: view
                             ,app: app
                             ,main: main};

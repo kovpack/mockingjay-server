@@ -2,6 +2,7 @@ module App where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import String exposing (..)
 import StartApp
 import List
@@ -33,13 +34,16 @@ type alias Endpoint = {
   response: Response
 }
 
-type alias Model = List Endpoint
+type alias Model = {
+  endpoints: List Endpoint,
+  inputName: String
+}
 
-testModel = []
+testModel = { endpoints = [], inputName = ""}
 init : (Model, Effects Action)
 init = (testModel, getEndpoints)
 
-type Action = GetEndpoints (Maybe (List Endpoint))
+type Action = GetEndpoints (Maybe (List Endpoint)) | CreateEndpoint
 
 getEndpoints : Effects Action
 getEndpoints =
@@ -80,9 +84,10 @@ update action model =
   case action of
     GetEndpoints endpoints ->
       (
-        Maybe.withDefault testModel endpoints,
+        Maybe.withDefault model (Maybe.map (\endpoint -> {model | endpoints = endpoint}) endpoints),
         Effects.none
       )
+    CreateEndpoint -> (model, Effects.none)
 
 -- view
 
@@ -122,13 +127,20 @@ renderHeaders headers =
   in
     ul [] (List.map itemRenderer (Dict.toList headers))
 
-
-view : Signal.Address Action -> Model -> Html
-view address model = div [] [
-    h1 [] [text "Mockingjay"],
-    renderEndpoints model
+renderAddForm : Signal.Address Action -> Html
+renderAddForm address = div [class "add-form"] [
+    h2 [] [text "Create new endpoint"],
+    label [for "name"] [text "Name"],
+    input [type' "text", name "name"] [],
+    button [onClick address CreateEndpoint] [text "Create endpoint"]
   ]
 
+view : Signal.Address Action -> Model -> Html
+view address model = div [class "mockingjay-wrap"] [
+    h1 [] [text "Mockingjay"],
+    renderAddForm address,
+    renderEndpoints model.endpoints
+  ]
 
 app =
   StartApp.start
