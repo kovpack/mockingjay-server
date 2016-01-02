@@ -38,16 +38,18 @@ type alias Endpoint = {
 
 type alias Model = {
   endpoints: List Endpoint,
-  inputName: String
+  inputName: String,
+  inputRequestURI: String
 }
 
-testModel = { endpoints = [], inputName = ""}
+testModel = { endpoints = [], inputName = "", inputRequestURI = ""}
 init : (Model, Effects Action)
 init = (testModel, getEndpoints)
 
 type Action
   = GetEndpoints (Maybe (List Endpoint))
   | InputName String
+  | InputRequestURI String
   | CreateEndpoint
   | EndpointCreated
 
@@ -57,7 +59,7 @@ endpointFromInputs model =
     name = model.inputName,
     cdcDisabled = True,
     request = {
-      uri = "/elm",
+      uri = model.inputRequestURI,
       method = "GET",
       headers = Maybe.Nothing,
       body = ""
@@ -140,6 +142,7 @@ update action model =
         Effects.none
       )
     InputName name -> ({model | inputName = name}, Effects.none)
+    InputRequestURI uri -> ({model | inputRequestURI = uri}, Effects.none)
     EndpointCreated -> (model, Effects.none)
     CreateEndpoint ->
       let
@@ -195,6 +198,7 @@ renderAddForm : Signal.Address Action -> Model -> Html
 renderAddForm address model = div [class "add-form"] [
     h2 [] [text "Create new endpoint"],
     field "text" address InputName "Endpoint name" model.inputName,
+    field "text" address InputRequestURI "Request URI" model.inputRequestURI,
     button [onClick address CreateEndpoint] [text "Create endpoint"]
   ]
 

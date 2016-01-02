@@ -11080,7 +11080,7 @@ Elm.App.make = function (_elm) {
    var endpointFromInputs = function (model) {
       return {name: model.inputName
              ,cdcDisabled: true
-             ,request: {uri: "/elm",method: "GET",headers: $Maybe.Nothing,body: ""}
+             ,request: {uri: model.inputRequestURI,method: "GET",headers: $Maybe.Nothing,body: ""}
              ,response: {status: 200,headers: $Maybe.Nothing,body: "Hello from Elm"}};
    };
    var EndpointCreated = {ctor: "EndpointCreated"};
@@ -11093,6 +11093,7 @@ Elm.App.make = function (_elm) {
                                    A2($Maybe.map,function (endpoint) {    return _U.update(model,{endpoints: endpoint});},_p2._0))
                                    ,_1: $Effects.none};
          case "InputName": return {ctor: "_Tuple2",_0: _U.update(model,{inputName: _p2._0}),_1: $Effects.none};
+         case "InputRequestURI": return {ctor: "_Tuple2",_0: _U.update(model,{inputRequestURI: _p2._0}),_1: $Effects.none};
          case "EndpointCreated": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
          default: var newEndpoint = endpointFromInputs(model);
            var request = $Effects.task(A2($Task.map,
@@ -11103,12 +11104,14 @@ Elm.App.make = function (_elm) {
            return {ctor: "_Tuple2",_0: _U.update(model,{endpoints: A2($List._op["::"],newEndpoint,model.endpoints)}),_1: request};}
    });
    var CreateEndpoint = {ctor: "CreateEndpoint"};
+   var InputRequestURI = function (a) {    return {ctor: "InputRequestURI",_0: a};};
    var InputName = function (a) {    return {ctor: "InputName",_0: a};};
    var renderAddForm = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("add-form")]),
       _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Create new endpoint")]))
               ,A5(field,"text",address,InputName,"Endpoint name",model.inputName)
+              ,A5(field,"text",address,InputRequestURI,"Request URI",model.inputRequestURI)
               ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,CreateEndpoint)]),_U.list([$Html.text("Create endpoint")]))]));
    });
    var view = F2(function (address,model) {
@@ -11117,8 +11120,8 @@ Elm.App.make = function (_elm) {
       _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Mockingjay")])),A2(renderAddForm,address,model),renderEndpoints(model.endpoints)]));
    });
    var GetEndpoints = function (a) {    return {ctor: "GetEndpoints",_0: a};};
-   var testModel = {endpoints: _U.list([]),inputName: ""};
-   var Model = F2(function (a,b) {    return {endpoints: a,inputName: b};});
+   var testModel = {endpoints: _U.list([]),inputName: "",inputRequestURI: ""};
+   var Model = F3(function (a,b,c) {    return {endpoints: a,inputName: b,inputRequestURI: c};});
    var Endpoint = F4(function (a,b,c,d) {    return {name: a,cdcDisabled: b,request: c,response: d};});
    var Response = F3(function (a,b,c) {    return {status: a,headers: b,body: c};});
    var Request = F4(function (a,b,c,d) {    return {uri: a,method: b,headers: c,body: d};});
@@ -11155,6 +11158,7 @@ Elm.App.make = function (_elm) {
                             ,init: init
                             ,GetEndpoints: GetEndpoints
                             ,InputName: InputName
+                            ,InputRequestURI: InputRequestURI
                             ,CreateEndpoint: CreateEndpoint
                             ,EndpointCreated: EndpointCreated
                             ,endpointFromInputs: endpointFromInputs
