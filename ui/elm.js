@@ -11075,10 +11075,7 @@ Elm.App.make = function (_elm) {
       return A2($Json$Encode.encode,0,endpointJSON);
    };
    var createEndpointRequest = function (endpoint) {
-      return {verb: "POST"
-             ,headers: _U.list([{ctor: "_Tuple2",_0: "Access-Control-Allow-Origin",_1: "http://localhost:8000"}])
-             ,url: "http://localhost:9090/mj-new-endpoint"
-             ,body: $Http.string(encodeEndpoint(endpoint))};
+      return {verb: "POST",headers: _U.list([]),url: "http://localhost:9090/mj-new-endpoint",body: $Http.string(encodeEndpoint(endpoint))};
    };
    var endpointFromInputs = function (model) {
       return {name: "From Elm"

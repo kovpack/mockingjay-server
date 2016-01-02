@@ -124,9 +124,7 @@ encodeEndpoint endpoint =
 createEndpointRequest: Endpoint -> Http.Request
 createEndpointRequest endpoint =
   { verb = "POST"
-  , headers =
-      [ ("Access-Control-Allow-Origin", "http://localhost:8000")
-      ]
+  , headers = []
   , url = "http://localhost:9090/mj-new-endpoint"
   , body = Http.string (encodeEndpoint endpoint)
   }
