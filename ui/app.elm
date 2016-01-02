@@ -8,10 +8,12 @@ import StartApp
 import List
 import Http
 import Json.Decode as Decode exposing (Decoder, (:=))
+import Json.Encode as Encode
 import Task
 import Effects exposing (Effects, Never)
 import Debug
 import Dict
+import Debug
 
 -- model
 type alias Request = {
@@ -47,6 +49,25 @@ type Action
   = GetEndpoints (Maybe (List Endpoint))
   | InputName String
   | CreateEndpoint
+  | EndpointCreated
+
+endpointFromInputs: Model -> Endpoint
+endpointFromInputs model =
+  {
+    name = "From Elm",
+    cdcDisabled = True,
+    request = {
+      uri = "/elm",
+      method = "GET",
+      headers = Maybe.Nothing,
+      body = ""
+    },
+    response = {
+      status = 200,
+      headers = Maybe.Nothing,
+      body = "Hello from Elm"
+    }
+  }
 
 getEndpoints : Effects Action
 getEndpoints =
@@ -80,6 +101,36 @@ decodeEndpoint =
   in
       Decode.list endpoint
 
+
+encodeEndpoint: Endpoint -> String
+encodeEndpoint endpoint =
+  let
+    endpointJSON = Encode.object
+      [ ("Name", Encode.string endpoint.name),
+        ("CDCDisabled", Encode.bool endpoint.cdcDisabled),
+        ("Request", Encode.object [
+          ("URI", Encode.string endpoint.request.uri),
+          ("Method", Encode.string endpoint.request.method),
+          ("Body", Encode.string endpoint.request.body)
+        ]),
+        ("Response", Encode.object [
+          ("Code", Encode.int endpoint.response.status),
+          ("Body", Encode.string endpoint.response.body)
+        ])
+      ]
+  in
+    Encode.encode 0 endpointJSON
+
+createEndpointRequest: Endpoint -> Http.Request
+createEndpointRequest endpoint =
+  { verb = "POST"
+  , headers =
+      [ ("Access-Control-Allow-Origin", "http://localhost:8000")
+      ]
+  , url = "http://localhost:9090/mj-new-endpoint"
+  , body = Http.string (encodeEndpoint endpoint)
+  }
+
 -- update
 
 update : Action -> Model -> (Model, Effects Action)
@@ -91,7 +142,17 @@ update action model =
         Effects.none
       )
     InputName name -> ({model | inputName = name}, Effects.none)
-    CreateEndpoint -> (model, Effects.none)
+    EndpointCreated -> (model, Effects.none)
+    CreateEndpoint ->
+      let
+        request =
+          Http.send Http.defaultSettings (createEndpointRequest (endpointFromInputs model))
+          |> Task.toMaybe
+          |> Task.map (\result -> EndpointCreated)
+          |> Effects.task
+
+      in
+        (model, request)
 
 -- view
 

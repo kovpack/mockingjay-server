@@ -13,6 +13,7 @@ Elm.App.make = function (_elm) {
    $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
+   $Json$Encode = Elm.Json.Encode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
@@ -65,6 +66,43 @@ Elm.App.make = function (_elm) {
               ,renderResponse(endpoint.response)]))]));
    };
    var renderEndpoints = function (endpoints) {    return A2($Html.ul,_U.list([]),A2($List.map,renderEndpoint,endpoints));};
+   var encodeEndpoint = function (endpoint) {
+      var endpointJSON = $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "Name",_1: $Json$Encode.string(endpoint.name)}
+                                                     ,{ctor: "_Tuple2",_0: "CDCDisabled",_1: $Json$Encode.bool(endpoint.cdcDisabled)}
+                                                     ,{ctor: "_Tuple2"
+                                                      ,_0: "Request"
+                                                      ,_1: $Json$Encode.object(_U.list([{ctor: "_Tuple2"
+                                                                                        ,_0: "URI"
+                                                                                        ,_1: $Json$Encode.string(endpoint.request.uri)}
+                                                                                       ,{ctor: "_Tuple2"
+                                                                                        ,_0: "Method"
+                                                                                        ,_1: $Json$Encode.string(endpoint.request.method)}
+                                                                                       ,{ctor: "_Tuple2"
+                                                                                        ,_0: "Body"
+                                                                                        ,_1: $Json$Encode.string(endpoint.request.body)}]))}
+                                                     ,{ctor: "_Tuple2"
+                                                      ,_0: "Response"
+                                                      ,_1: $Json$Encode.object(_U.list([{ctor: "_Tuple2"
+                                                                                        ,_0: "Code"
+                                                                                        ,_1: $Json$Encode.$int(endpoint.response.status)}
+                                                                                       ,{ctor: "_Tuple2"
+                                                                                        ,_0: "Body"
+                                                                                        ,_1: $Json$Encode.string(endpoint.response.body)}]))}]));
+      return A2($Json$Encode.encode,0,endpointJSON);
+   };
+   var createEndpointRequest = function (endpoint) {
+      return {verb: "POST"
+             ,headers: _U.list([{ctor: "_Tuple2",_0: "Access-Control-Allow-Origin",_1: "http://localhost:8000"}])
+             ,url: "http://localhost:9090/mj-new-endpoint"
+             ,body: $Http.string(encodeEndpoint(endpoint))};
+   };
+   var endpointFromInputs = function (model) {
+      return {name: "From Elm"
+             ,cdcDisabled: true
+             ,request: {uri: "/elm",method: "GET",headers: $Maybe.Nothing,body: ""}
+             ,response: {status: 200,headers: $Maybe.Nothing,body: "Hello from Elm"}};
+   };
+   var EndpointCreated = {ctor: "EndpointCreated"};
    var update = F2(function (action,model) {
       var _p2 = action;
       switch (_p2.ctor)
@@ -74,7 +112,13 @@ Elm.App.make = function (_elm) {
                                    A2($Maybe.map,function (endpoint) {    return _U.update(model,{endpoints: endpoint});},_p2._0))
                                    ,_1: $Effects.none};
          case "InputName": return {ctor: "_Tuple2",_0: _U.update(model,{inputName: _p2._0}),_1: $Effects.none};
-         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+         case "EndpointCreated": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         default: var request = $Effects.task(A2($Task.map,
+           function (result) {
+              return EndpointCreated;
+           },
+           $Task.toMaybe(A2($Http.send,$Http.defaultSettings,createEndpointRequest(endpointFromInputs(model))))));
+           return {ctor: "_Tuple2",_0: model,_1: request};}
    });
    var CreateEndpoint = {ctor: "CreateEndpoint"};
    var InputName = function (a) {    return {ctor: "InputName",_0: a};};
@@ -130,8 +174,12 @@ Elm.App.make = function (_elm) {
                             ,GetEndpoints: GetEndpoints
                             ,InputName: InputName
                             ,CreateEndpoint: CreateEndpoint
+                            ,EndpointCreated: EndpointCreated
+                            ,endpointFromInputs: endpointFromInputs
                             ,getEndpoints: getEndpoints
                             ,decodeEndpoint: decodeEndpoint
+                            ,encodeEndpoint: encodeEndpoint
+                            ,createEndpointRequest: createEndpointRequest
                             ,update: update
                             ,renderRequest: renderRequest
                             ,renderResponse: renderResponse

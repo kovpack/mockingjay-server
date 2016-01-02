@@ -9,6 +9,7 @@ import (
 
 	"github.com/quii/mockingjay-server/mockingjay"
 	"github.com/quii/mockingjay-server/monkey"
+	"github.com/rs/cors"
 )
 
 type configLoader func(string) ([]byte, error)
@@ -81,10 +82,19 @@ func (a *application) runFakeServer(endpoints []mockingjay.FakeEndpoint, configP
 	if err != nil {
 		return err
 	}
-
-	http.Handle("/", monkeyServer)
+	mux := http.NewServeMux()
+	mux.Handle("/", monkeyServer)
 	a.logger.Printf("Serving %d endpoints defined from %s on port %d", len(endpoints), configPath, port)
-	err = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost*"},
+		AllowedHeaders: []string{"*"},
+		Debug:          true,
+	})
+
+	handler := c.Handler(mux)
+
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
 	if err != nil {
 		return fmt.Errorf("There was a problem starting the mockingjay server on port %d: %v", port, err)
 	}

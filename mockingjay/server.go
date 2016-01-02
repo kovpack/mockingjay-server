@@ -31,6 +31,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case endpointsURL:
 		s.serveEndpoints(w)
 	case newEndpointURL:
+		log.Println("Create new endpoint hit", r)
 		s.createEndpoint(w, r)
 	case requestsURL:
 		s.listAvailableRequests(w)
