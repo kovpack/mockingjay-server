@@ -54,7 +54,7 @@ type Action
 endpointFromInputs: Model -> Endpoint
 endpointFromInputs model =
   {
-    name = "From Elm",
+    name = model.inputName,
     cdcDisabled = True,
     request = {
       uri = "/elm",
@@ -143,14 +143,15 @@ update action model =
     EndpointCreated -> (model, Effects.none)
     CreateEndpoint ->
       let
+        newEndpoint = (endpointFromInputs model)
         request =
-          Http.send Http.defaultSettings (createEndpointRequest (endpointFromInputs model))
+          Http.send Http.defaultSettings (createEndpointRequest newEndpoint)
           |> Task.toMaybe
           |> Task.map (\result -> EndpointCreated)
           |> Effects.task
 
       in
-        (model, request)
+        ({model | endpoints = newEndpoint :: model.endpoints}, request)
 
 -- view
 
