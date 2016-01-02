@@ -38,11 +38,26 @@ type alias Endpoint = {
 
 type alias Model = {
   endpoints: List Endpoint,
-  inputName: String,
-  inputRequestURI: String
+  newEndpoint: Endpoint
 }
 
-testModel = { endpoints = [], inputName = "", inputRequestURI = ""}
+emptyEndpoint = {
+    name = "",
+    cdcDisabled = False,
+    request = {
+      uri = "",
+      method = "GET",
+      headers = Maybe.Nothing,
+      body = ""
+    },
+    response = {
+      status = 200,
+      headers = Maybe.Nothing,
+      body = ""
+    }
+  }
+
+testModel = { endpoints = [], newEndpoint = emptyEndpoint }
 init : (Model, Effects Action)
 init = (testModel, getEndpoints)
 
@@ -56,10 +71,10 @@ type Action
 endpointFromInputs: Model -> Endpoint
 endpointFromInputs model =
   {
-    name = model.inputName,
+    name = model.newEndpoint.name,
     cdcDisabled = True,
     request = {
-      uri = model.inputRequestURI,
+      uri = model.newEndpoint.request.uri,
       method = "GET",
       headers = Maybe.Nothing,
       body = ""
@@ -141,8 +156,20 @@ update action model =
         Maybe.withDefault model (Maybe.map (\endpoint -> {model | endpoints = endpoint}) endpoints),
         Effects.none
       )
-    InputName name -> ({model | inputName = name}, Effects.none)
-    InputRequestURI uri -> ({model | inputRequestURI = uri}, Effects.none)
+    InputName name ->
+      let
+        thingToUpdate = model.newEndpoint
+        newEndpoint = {thingToUpdate | name = name}
+      in
+        ({model | newEndpoint = newEndpoint}, Effects.none)
+    InputRequestURI uri ->
+      let
+        endpointToUpdate = model.newEndpoint
+        requestToUpdate = endpointToUpdate.request
+        updatedRequest = {requestToUpdate | uri = uri}
+        updatedEndpoint = {endpointToUpdate | request = updatedRequest}
+      in
+        ({model | newEndpoint = updatedEndpoint}, Effects.none)
     EndpointCreated -> (model, Effects.none)
     CreateEndpoint ->
       let
@@ -197,8 +224,8 @@ renderHeaders headers =
 renderAddForm : Signal.Address Action -> Model -> Html
 renderAddForm address model = div [class "add-form"] [
     h2 [] [text "Create new endpoint"],
-    field "text" address InputName "Endpoint name" model.inputName,
-    field "text" address InputRequestURI "Request URI" model.inputRequestURI,
+    field "text" address InputName "Endpoint name" model.newEndpoint.name,
+    field "text" address InputRequestURI "Request URI" model.newEndpoint.request.uri,
     button [onClick address CreateEndpoint] [text "Create endpoint"]
   ]
 
