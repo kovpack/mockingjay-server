@@ -30,18 +30,25 @@ update action model =
         updatedEndpoint = {endpointToUpdate | request = updatedRequest}
       in
         ({model | newEndpoint = updatedEndpoint}, Effects.none)
+    InputResponseBody body ->
+      let
+        endpointToUpdate = model.newEndpoint
+        responseToUpdate = endpointToUpdate.response
+        updatedResponse = {responseToUpdate | body = body}
+        updatedEndpoint = {endpointToUpdate | response = updatedResponse}
+      in
+        ({model | newEndpoint = updatedEndpoint}, Effects.none)
     EndpointCreated -> (model, Effects.none)
     CreateEndpoint ->
       let
-        newEndpoint = (endpointFromInputs model)
         request =
-          Http.send Http.defaultSettings (createEndpointRequest newEndpoint)
+          Http.send Http.defaultSettings (createEndpointRequest model.newEndpoint)
           |> Task.toMaybe
           |> Task.map (\result -> EndpointCreated)
           |> Effects.task
 
       in
-        ({model | endpoints = newEndpoint :: model.endpoints}, request)
+        ({model | endpoints = model.newEndpoint :: model.endpoints}, request)
 
 app =
   StartApp.start

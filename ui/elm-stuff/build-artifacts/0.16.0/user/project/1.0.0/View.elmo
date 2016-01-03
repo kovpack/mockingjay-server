@@ -33,6 +33,7 @@ Elm.View.make = function (_elm) {
       _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Create new endpoint")]))
               ,A5(field,"text",address,$Model.InputName,"Endpoint name",model.newEndpoint.name)
               ,A5(field,"text",address,$Model.InputRequestURI,"Request URI",model.newEndpoint.request.uri)
+              ,A5(field,"textarea",address,$Model.InputResponseBody,"Response Body",model.newEndpoint.response.body)
               ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,$Model.CreateEndpoint)]),_U.list([$Html.text("Create endpoint")]))]));
    });
    var renderHeaders = function (headers) {

@@ -11028,12 +11028,8 @@ Elm.Model.make = function (_elm) {
    var createEndpointRequest = function (endpoint) {
       return {verb: "POST",headers: _U.list([]),url: "http://localhost:9090/mj-new-endpoint",body: $Http.string(encodeEndpoint(endpoint))};
    };
-   var endpointFromInputs = function (model) {
-      return {name: model.newEndpoint.name
-             ,cdcDisabled: true
-             ,request: {uri: model.newEndpoint.request.uri,method: "GET",headers: $Maybe.Nothing,body: ""}
-             ,response: {status: 200,headers: $Maybe.Nothing,body: "Hello from Elm"}};
-   };
+   var endpointFromInputs = function (model) {    return model.newEndpoint;};
+   var InputResponseBody = function (a) {    return {ctor: "InputResponseBody",_0: a};};
    var EndpointCreated = {ctor: "EndpointCreated"};
    var CreateEndpoint = {ctor: "CreateEndpoint"};
    var InputRequestURI = function (a) {    return {ctor: "InputRequestURI",_0: a};};
@@ -11082,6 +11078,7 @@ Elm.Model.make = function (_elm) {
                               ,InputRequestURI: InputRequestURI
                               ,CreateEndpoint: CreateEndpoint
                               ,EndpointCreated: EndpointCreated
+                              ,InputResponseBody: InputResponseBody
                               ,endpointFromInputs: endpointFromInputs
                               ,getEndpoints: getEndpoints
                               ,decodeEndpoint: decodeEndpoint
@@ -11123,6 +11120,7 @@ Elm.View.make = function (_elm) {
       _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Create new endpoint")]))
               ,A5(field,"text",address,$Model.InputName,"Endpoint name",model.newEndpoint.name)
               ,A5(field,"text",address,$Model.InputRequestURI,"Request URI",model.newEndpoint.request.uri)
+              ,A5(field,"textarea",address,$Model.InputResponseBody,"Response Body",model.newEndpoint.response.body)
               ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,$Model.CreateEndpoint)]),_U.list([$Html.text("Create endpoint")]))]));
    });
    var renderHeaders = function (headers) {
@@ -11209,14 +11207,18 @@ Elm.App.make = function (_elm) {
            var updatedRequest = _U.update(requestToUpdate,{uri: _p0._0});
            var updatedEndpoint = _U.update(endpointToUpdate,{request: updatedRequest});
            return {ctor: "_Tuple2",_0: _U.update(model,{newEndpoint: updatedEndpoint}),_1: $Effects.none};
+         case "InputResponseBody": var endpointToUpdate = model.newEndpoint;
+           var responseToUpdate = endpointToUpdate.response;
+           var updatedResponse = _U.update(responseToUpdate,{body: _p0._0});
+           var updatedEndpoint = _U.update(endpointToUpdate,{response: updatedResponse});
+           return {ctor: "_Tuple2",_0: _U.update(model,{newEndpoint: updatedEndpoint}),_1: $Effects.none};
          case "EndpointCreated": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         default: var newEndpoint = $Model.endpointFromInputs(model);
-           var request = $Effects.task(A2($Task.map,
+         default: var request = $Effects.task(A2($Task.map,
            function (result) {
               return $Model.EndpointCreated;
            },
-           $Task.toMaybe(A2($Http.send,$Http.defaultSettings,$Model.createEndpointRequest(newEndpoint)))));
-           return {ctor: "_Tuple2",_0: _U.update(model,{endpoints: A2($List._op["::"],newEndpoint,model.endpoints)}),_1: request};}
+           $Task.toMaybe(A2($Http.send,$Http.defaultSettings,$Model.createEndpointRequest(model.newEndpoint)))));
+           return {ctor: "_Tuple2",_0: _U.update(model,{endpoints: A2($List._op["::"],model.newEndpoint,model.endpoints)}),_1: request};}
    });
    var app = $StartApp.start({init: $Model.init,update: update,view: $View.view,inputs: _U.list([])});
    var main = app.html;

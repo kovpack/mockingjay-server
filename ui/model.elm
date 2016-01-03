@@ -59,24 +59,10 @@ type Action
   | InputRequestURI String
   | CreateEndpoint
   | EndpointCreated
+  | InputResponseBody String
 
 endpointFromInputs: Model -> Endpoint
-endpointFromInputs model =
-  {
-    name = model.newEndpoint.name,
-    cdcDisabled = True,
-    request = {
-      uri = model.newEndpoint.request.uri,
-      method = "GET",
-      headers = Maybe.Nothing,
-      body = ""
-    },
-    response = {
-      status = 200,
-      headers = Maybe.Nothing,
-      body = "Hello from Elm"
-    }
-  }
+endpointFromInputs model = model.newEndpoint
 
 getEndpoints : Effects Action
 getEndpoints =

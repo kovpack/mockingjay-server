@@ -47,6 +47,7 @@ renderAddForm address model = div [class "add-form"] [
     h2 [] [text "Create new endpoint"],
     field "text" address InputName "Endpoint name" model.newEndpoint.name,
     field "text" address InputRequestURI "Request URI" model.newEndpoint.request.uri,
+    field "textarea" address InputResponseBody "Response Body" model.newEndpoint.response.body,
     button [onClick address CreateEndpoint] [text "Create endpoint"]
   ]
 

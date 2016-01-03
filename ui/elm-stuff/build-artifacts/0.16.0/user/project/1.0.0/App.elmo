@@ -33,14 +33,18 @@ Elm.App.make = function (_elm) {
            var updatedRequest = _U.update(requestToUpdate,{uri: _p0._0});
            var updatedEndpoint = _U.update(endpointToUpdate,{request: updatedRequest});
            return {ctor: "_Tuple2",_0: _U.update(model,{newEndpoint: updatedEndpoint}),_1: $Effects.none};
+         case "InputResponseBody": var endpointToUpdate = model.newEndpoint;
+           var responseToUpdate = endpointToUpdate.response;
+           var updatedResponse = _U.update(responseToUpdate,{body: _p0._0});
+           var updatedEndpoint = _U.update(endpointToUpdate,{response: updatedResponse});
+           return {ctor: "_Tuple2",_0: _U.update(model,{newEndpoint: updatedEndpoint}),_1: $Effects.none};
          case "EndpointCreated": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         default: var newEndpoint = $Model.endpointFromInputs(model);
-           var request = $Effects.task(A2($Task.map,
+         default: var request = $Effects.task(A2($Task.map,
            function (result) {
               return $Model.EndpointCreated;
            },
-           $Task.toMaybe(A2($Http.send,$Http.defaultSettings,$Model.createEndpointRequest(newEndpoint)))));
-           return {ctor: "_Tuple2",_0: _U.update(model,{endpoints: A2($List._op["::"],newEndpoint,model.endpoints)}),_1: request};}
+           $Task.toMaybe(A2($Http.send,$Http.defaultSettings,$Model.createEndpointRequest(model.newEndpoint)))));
+           return {ctor: "_Tuple2",_0: _U.update(model,{endpoints: A2($List._op["::"],model.newEndpoint,model.endpoints)}),_1: request};}
    });
    var app = $StartApp.start({init: $Model.init,update: update,view: $View.view,inputs: _U.list([])});
    var main = app.html;
