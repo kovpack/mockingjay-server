@@ -1,0 +1,86 @@
+Elm.View = Elm.View || {};
+Elm.View.make = function (_elm) {
+   "use strict";
+   _elm.View = _elm.View || {};
+   if (_elm.View.values) return _elm.View.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var field = F5(function (fieldType,address,toAction,name,content) {
+      return A2($Html.div,
+      _U.list([]),
+      _U.list([A2($Html.div,_U.list([]),_U.list([$Html.text(name)]))
+              ,A2($Html.input,
+              _U.list([$Html$Attributes.type$(fieldType)
+                      ,$Html$Attributes.placeholder(name)
+                      ,$Html$Attributes.value(content)
+                      ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (string) {    return A2($Signal.message,address,toAction(string));})]),
+              _U.list([]))]));
+   });
+   var renderAddForm = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("add-form")]),
+      _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Create new endpoint")]))
+              ,A5(field,"text",address,$Model.InputName,"Endpoint name",model.newEndpoint.name)
+              ,A5(field,"text",address,$Model.InputRequestURI,"Request URI",model.newEndpoint.request.uri)
+              ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,$Model.CreateEndpoint)]),_U.list([$Html.text("Create endpoint")]))]));
+   });
+   var renderHeaders = function (headers) {
+      var itemRenderer = function (_p0) {
+         var _p1 = _p0;
+         return A2($Html.li,_U.list([]),_U.list([$Html.text(_p1._0),$Html.text(" -> "),$Html.text(_p1._1)]));
+      };
+      return A2($Html.ul,_U.list([]),A2($List.map,itemRenderer,$Dict.toList(headers)));
+   };
+   var renderResponse = function (response) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("response")]),
+      _U.list([A2($Html.h3,_U.list([]),_U.list([$Html.text("Response")]))
+              ,A2($Html.p,_U.list([]),_U.list([$Html.text($Basics.toString(response.status))]))
+              ,A2($Maybe.withDefault,$Html.text("lol"),A2($Maybe.map,renderHeaders,response.headers))
+              ,A2($Html.blockquote,_U.list([]),_U.list([$Html.text(response.body)]))]));
+   };
+   var renderRequest = function (request) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("request")]),
+      _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Request")]))
+              ,A2($Html.p,_U.list([]),_U.list([$Html.text(request.method),$Html.text(" "),$Html.text(request.uri)]))
+              ,A2($Maybe.withDefault,$Html.text("lol"),A2($Maybe.map,renderHeaders,request.headers))
+              ,A2($Html.blockquote,_U.list([]),_U.list([$Html.text(request.body)]))]));
+   };
+   var renderEndpoint = function (endpoint) {
+      return A2($Html.li,
+      _U.list([]),
+      _U.list([A2($Html.div,
+      _U.list([]),
+      _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text(endpoint.name)]))
+              ,A2($Html.code,_U.list([]),_U.list([$Html.text("CDC Disabled: "),$Html.text($Basics.toString(endpoint.cdcDisabled))]))
+              ,renderRequest(endpoint.request)
+              ,renderResponse(endpoint.response)]))]));
+   };
+   var renderEndpoints = function (endpoints) {    return A2($Html.ul,_U.list([]),A2($List.map,renderEndpoint,endpoints));};
+   var view = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("mockingjay-wrap")]),
+      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Mockingjay")])),A2(renderAddForm,address,model),renderEndpoints(model.endpoints)]));
+   });
+   return _elm.View.values = {_op: _op
+                             ,renderRequest: renderRequest
+                             ,renderResponse: renderResponse
+                             ,renderEndpoint: renderEndpoint
+                             ,renderEndpoints: renderEndpoints
+                             ,renderHeaders: renderHeaders
+                             ,renderAddForm: renderAddForm
+                             ,field: field
+                             ,view: view};
+};

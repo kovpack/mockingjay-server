@@ -1,0 +1,106 @@
+Elm.Model = Elm.Model || {};
+Elm.Model.make = function (_elm) {
+   "use strict";
+   _elm.Model = _elm.Model || {};
+   if (_elm.Model.values) return _elm.Model.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $Json$Encode = Elm.Json.Encode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var _op = {};
+   var encodeEndpoint = function (endpoint) {
+      var endpointJSON = $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "Name",_1: $Json$Encode.string(endpoint.name)}
+                                                     ,{ctor: "_Tuple2",_0: "CDCDisabled",_1: $Json$Encode.bool(endpoint.cdcDisabled)}
+                                                     ,{ctor: "_Tuple2"
+                                                      ,_0: "Request"
+                                                      ,_1: $Json$Encode.object(_U.list([{ctor: "_Tuple2"
+                                                                                        ,_0: "URI"
+                                                                                        ,_1: $Json$Encode.string(endpoint.request.uri)}
+                                                                                       ,{ctor: "_Tuple2"
+                                                                                        ,_0: "Method"
+                                                                                        ,_1: $Json$Encode.string(endpoint.request.method)}
+                                                                                       ,{ctor: "_Tuple2"
+                                                                                        ,_0: "Body"
+                                                                                        ,_1: $Json$Encode.string(endpoint.request.body)}]))}
+                                                     ,{ctor: "_Tuple2"
+                                                      ,_0: "Response"
+                                                      ,_1: $Json$Encode.object(_U.list([{ctor: "_Tuple2"
+                                                                                        ,_0: "Code"
+                                                                                        ,_1: $Json$Encode.$int(endpoint.response.status)}
+                                                                                       ,{ctor: "_Tuple2"
+                                                                                        ,_0: "Body"
+                                                                                        ,_1: $Json$Encode.string(endpoint.response.body)}]))}]));
+      return A2($Json$Encode.encode,0,endpointJSON);
+   };
+   var createEndpointRequest = function (endpoint) {
+      return {verb: "POST",headers: _U.list([]),url: "http://localhost:9090/mj-new-endpoint",body: $Http.string(encodeEndpoint(endpoint))};
+   };
+   var endpointFromInputs = function (model) {
+      return {name: model.newEndpoint.name
+             ,cdcDisabled: true
+             ,request: {uri: model.newEndpoint.request.uri,method: "GET",headers: $Maybe.Nothing,body: ""}
+             ,response: {status: 200,headers: $Maybe.Nothing,body: "Hello from Elm"}};
+   };
+   var EndpointCreated = {ctor: "EndpointCreated"};
+   var CreateEndpoint = {ctor: "CreateEndpoint"};
+   var InputRequestURI = function (a) {    return {ctor: "InputRequestURI",_0: a};};
+   var InputName = function (a) {    return {ctor: "InputName",_0: a};};
+   var GetEndpoints = function (a) {    return {ctor: "GetEndpoints",_0: a};};
+   var emptyEndpoint = {name: ""
+                       ,cdcDisabled: false
+                       ,request: {uri: "",method: "GET",headers: $Maybe.Nothing,body: ""}
+                       ,response: {status: 200,headers: $Maybe.Nothing,body: ""}};
+   var testModel = {endpoints: _U.list([]),newEndpoint: emptyEndpoint};
+   var Model = F2(function (a,b) {    return {endpoints: a,newEndpoint: b};});
+   var Endpoint = F4(function (a,b,c,d) {    return {name: a,cdcDisabled: b,request: c,response: d};});
+   var Response = F3(function (a,b,c) {    return {status: a,headers: b,body: c};});
+   var Request = F4(function (a,b,c,d) {    return {uri: a,method: b,headers: c,body: d};});
+   var decodeEndpoint = function () {
+      var endpoint = A5($Json$Decode.object4,
+      Endpoint,
+      A2($Json$Decode._op[":="],"Name",$Json$Decode.string),
+      A2($Json$Decode._op[":="],"CDCDisabled",$Json$Decode.bool),
+      A5($Json$Decode.object4,
+      Request,
+      A2($Json$Decode.at,_U.list(["Request","URI"]),$Json$Decode.string),
+      A2($Json$Decode.at,_U.list(["Request","Method"]),$Json$Decode.string),
+      $Json$Decode.maybe(A2($Json$Decode.at,_U.list(["Request","Headers"]),$Json$Decode.dict($Json$Decode.string))),
+      A2($Json$Decode.at,_U.list(["Request","Body"]),$Json$Decode.string)),
+      A4($Json$Decode.object3,
+      Response,
+      A2($Json$Decode.at,_U.list(["Response","Code"]),$Json$Decode.$int),
+      $Json$Decode.maybe(A2($Json$Decode.at,_U.list(["Response","Headers"]),$Json$Decode.dict($Json$Decode.string))),
+      A2($Json$Decode.at,_U.list(["Response","Body"]),$Json$Decode.string)));
+      var request = $Json$Decode.object1(Request);
+      return $Json$Decode.list(endpoint);
+   }();
+   var getEndpoints = $Effects.task(A2($Task.map,GetEndpoints,$Task.toMaybe(A2($Http.get,decodeEndpoint,"http://localhost:9090/mj-endpoints"))));
+   var init = {ctor: "_Tuple2",_0: testModel,_1: getEndpoints};
+   return _elm.Model.values = {_op: _op
+                              ,Request: Request
+                              ,Response: Response
+                              ,Endpoint: Endpoint
+                              ,Model: Model
+                              ,emptyEndpoint: emptyEndpoint
+                              ,testModel: testModel
+                              ,init: init
+                              ,GetEndpoints: GetEndpoints
+                              ,InputName: InputName
+                              ,InputRequestURI: InputRequestURI
+                              ,CreateEndpoint: CreateEndpoint
+                              ,EndpointCreated: EndpointCreated
+                              ,endpointFromInputs: endpointFromInputs
+                              ,getEndpoints: getEndpoints
+                              ,decodeEndpoint: decodeEndpoint
+                              ,encodeEndpoint: encodeEndpoint
+                              ,createEndpointRequest: createEndpointRequest};
+};
