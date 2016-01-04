@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/quii/mockingjay-server",
-	"GoVersion": "go1.4.2",
+	"GoVersion": "go1.5.1",
 	"Deps": [
 		{
 			"ImportPath": "github.com/clbanning/mxj",
@@ -17,6 +17,18 @@
 		{
 			"ImportPath": "github.com/quii/jsonequaliser",
 			"Rev": "0e8e326e23df587d926cbbf33ec10849ed1e0970"
+		},
+		{
+			"ImportPath": "github.com/rs/cors",
+			"Rev": "ceb1fbf238d7711a11a86a2622d0b85305348aeb"
+		},
+		{
+			"ImportPath": "github.com/rs/xhandler",
+			"Rev": "d9d9599b6aaf6a058cb7b1f48291ded2cbd13390"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "0cb26f788dd4625d1956c6fd97ffc4c90669d129"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
