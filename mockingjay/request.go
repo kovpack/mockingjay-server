@@ -76,7 +76,14 @@ func NewRequest(httpRequest *http.Request) (req Request) {
 		}
 	}
 
+  logRequest(req)
+
 	return
+}
+
+func logRequest(req Request) {
+  fmt.Printf("\n%sREQUEST%s\n", strings.Repeat("=", 20), strings.Repeat("=", 42))
+  log.Println(req.hash())
 }
 
 const stringerFormat = "%s %s"
@@ -86,7 +93,7 @@ func (r Request) String() string {
 }
 
 func (r Request) hash() string {
-	return fmt.Sprintf("URI: %v | METHOD: %v | HEADERS: %v | BODY: %v", r.URI, r.Method, r.Headers, r.Body)
+  return fmt.Sprintf("\n URI:     %v \n METHOD:  %v \n HEADERS: %v \n BODY: %v", r.URI, r.Method, r.Headers, r.Body)
 }
 
 func requestMatches(expected, incoming Request) bool {

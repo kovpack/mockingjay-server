@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+  "fmt"
+  "strings"
 )
 
 // Server allows you to configure a HTTP server for a slice of fake endpoints
@@ -45,7 +47,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		w.WriteHeader(cannedResponse.Code)
 		w.Write([]byte(cannedResponse.Body))
+
+    logResponse(cannedResponse)
 	}
+}
+
+func logResponse(response *response) {
+  fmt.Printf("%sRESPONSE%s\n", strings.Repeat("=", 20), strings.Repeat("=", 42))
+  log.Println(response.hash())
 }
 
 func (s *Server) listAvailableRequests(w http.ResponseWriter) {

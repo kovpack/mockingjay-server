@@ -3,6 +3,7 @@ package mockingjay
 import (
 	"encoding/json"
 	"log"
+  "fmt"
 )
 
 type response struct {
@@ -34,5 +35,10 @@ func newNotFound(method string, url string, body string, headers map[string]stri
 	if err != nil {
 		log.Println(err)
 	}
+
 	return &response{404, string(j), nil}
+}
+
+func (r response) hash() string {
+	return fmt.Sprintf("\n CODE:    %v \n HEADERS: %v \n BODY:   %v", r.Code, r.Headers, r.Body)
 }
